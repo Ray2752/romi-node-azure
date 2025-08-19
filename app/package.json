@@ -1,11 +1,31 @@
 {
-  "name": "romi-node-app",
-  "version": "1.0.0",
+  "name": "romi-ai-task-manager",
+  "version": "2.0.0",
+  "description": "ROMI AI Task Manager - Full Stack MERN Application",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "npm run build:client",
+    "build:client": "cd client && npm run build",
+    "install:client": "cd client && npm install",
+    "heroku-postbuild": "npm run install:client && npm run build:client"
   },
+  "keywords": ["azure", "devops", "api", "rest", "task-manager", "terraform", "cicd", "react", "mongodb", "mern"],
+  "author": "ROMI AI - https://romiai.com.mx/",
   "dependencies": {
-    "express": "^4.18.4"
+    "express": "^4.18.4",
+    "mongoose": "^8.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
+    "morgan": "^1.10.0",
+    "express-rate-limit": "^7.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
