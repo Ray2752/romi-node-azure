@@ -33,13 +33,13 @@ interface TaskTableProps {
   onToggleTaskStatus: (taskId: string) => void;
 }
 
-const TaskTable: React.FC<TaskTableProps> = ({
+const TaskTable = ({
   tasks,
   onAddTask,
   onEditTask,
   onDeleteTask,
   onToggleTaskStatus
-}) => {
+}: TaskTableProps) => {
   return (
     <Card elevation={2}>
       <CardContent>
@@ -79,14 +79,14 @@ const TaskTable: React.FC<TaskTableProps> = ({
                     <Chip
                       icon={getStatusIcon(task.status)}
                       label={task.status}
-                      color={getStatusColor(task.status) as any}
+                      color={getStatusColor(task.status)}
                       size="small"
                     />
                   </TableCell>
                   <TableCell>
                     <Chip
                       label={task.priority}
-                      color={getPriorityColor(task.priority) as any}
+                      color={getPriorityColor(task.priority)}
                       size="small"
                     />
                   </TableCell>
@@ -107,7 +107,7 @@ const TaskTable: React.FC<TaskTableProps> = ({
                     />
                   </TableCell>
                   <TableCell>
-                    {task.tags.map((tag, idx) => (
+                    {task.tags && task.tags.map((tag, idx) => (
                       <Chip key={idx} label={tag} size="small" sx={{ mr: 0.5 }} />
                     ))}
                   </TableCell>

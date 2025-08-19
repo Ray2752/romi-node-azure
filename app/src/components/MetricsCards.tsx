@@ -18,7 +18,7 @@ interface MetricsCardsProps {
   tasks: Task[];
 }
 
-const MetricsCards: React.FC<MetricsCardsProps> = ({ tasks }) => {
+const MetricsCards = ({ tasks }: MetricsCardsProps) => {
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.completed).length;
   const inProgressTasks = tasks.filter(task => task.status === 'in-progress').length;

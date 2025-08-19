@@ -12,13 +12,13 @@ interface DashboardViewProps {
   onToggleTaskStatus: (taskId: string) => void;
 }
 
-const DashboardView: React.FC<DashboardViewProps> = ({
+const DashboardView = ({
   tasks,
   onAddTask,
   onEditTask,
   onDeleteTask,
   onToggleTaskStatus
-}) => {
+}: DashboardViewProps) => {
   return (
     <Grid container spacing={3}>
       {/* Metrics Cards */}

@@ -23,12 +23,12 @@ interface NavigationDrawerProps {
   onViewChange: (view: string) => void;
 }
 
-const NavigationDrawer: React.FC<NavigationDrawerProps> = ({
+const NavigationDrawer = ({
   open,
   currentView,
   onClose,
   onViewChange
-}) => {
+}: NavigationDrawerProps) => {
   const handleViewChange = (view: string) => {
     onViewChange(view);
     onClose();

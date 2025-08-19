@@ -4,7 +4,10 @@ import {
   Schedule as PendingIcon
 } from '@mui/icons-material';
 
-export const getStatusColor = (status: string) => {
+type StatusColorType = 'success' | 'primary' | 'warning' | 'default';
+type PriorityColorType = 'error' | 'warning' | 'info' | 'success' | 'default';
+
+export const getStatusColor = (status: string): StatusColorType => {
   switch (status) {
     case 'completed': return 'success';
     case 'in-progress': return 'primary';
@@ -13,7 +16,7 @@ export const getStatusColor = (status: string) => {
   }
 };
 
-export const getPriorityColor = (priority: string) => {
+export const getPriorityColor = (priority: string): PriorityColorType => {
   switch (priority) {
     case 'urgent': return 'error';
     case 'high': return 'warning';
