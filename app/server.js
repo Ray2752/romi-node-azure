@@ -14,7 +14,7 @@ app.get('*', (req, res) => {
 const port = process.env.PORT || 3001;
 
 app.listen(port, () => {
-  console.log(`🚀 ROMI AI Frontend Server running on port ${port}`);
+  console.log(`🚀 Task Manager Frontend Server running on port ${port}`);
   console.log(`📱 App URL: http://localhost:${port}`);
 });
 

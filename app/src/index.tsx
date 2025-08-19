@@ -4,16 +4,16 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import App from './App';
 
-// ROMI AI Brand Colors
+// Task Manager Theme Colors
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#1976d2', // ROMI AI Blue
+      main: '#1976d2', // Task Manager Blue
       light: '#42a5f5',
       dark: '#1565c0',
     },
     secondary: {
-      main: '#9c27b0', // ROMI AI Purple
+      main: '#9c27b0', // Task Manager Purple
       light: '#ba68c8',
       dark: '#7b1fa2',
     },
