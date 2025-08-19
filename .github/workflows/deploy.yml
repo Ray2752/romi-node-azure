@@ -21,12 +21,12 @@ jobs:
       - name: Install dependencies
         run: |
           cd app
-          npm install
+          npm install --production
 
-      - name: Zip project
+      - name: Create deployment package
         run: |
           cd app
-          zip -r ../release.zip .
+          zip -r ../deployment.zip . -x "node_modules/.cache/*"
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
@@ -34,4 +34,4 @@ jobs:
           app-name: romi-node-webapp-12345
           slot-name: production
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: release.zip
+          package: deployment.zip
