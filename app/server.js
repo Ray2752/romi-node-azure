@@ -53,8 +53,9 @@ app.use((err, req, res, next) => {
 
 // Puerto configurado por Azure o 3001 por defecto
 const port = process.env.PORT || 3001;
+const host = '0.0.0.0';
 
-app.listen(port, () => {
+app.listen(port, host, () => {
   console.log(`🚀 ROMI Task Manager Server running on port ${port}`);
   console.log(`📱 Frontend URL: http://localhost:${port}`);
   console.log(`🔗 API URL: http://localhost:${port}/api`);
