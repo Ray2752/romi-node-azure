@@ -1,0 +1,73 @@
+name: Deploy ROMI Task Manager to Azure
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  AZURE_WEBAPP_NAME: 'romi-node-webapp-12345'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: app/package-lock.json
+
+    - name: Print versions
+      run: |
+        node -v
+        npm -v
+
+    - name: Install deps (inside app/)
+      working-directory: app
+      run: |
+        # Si existe lock, intenta ci; si no, usa install
+        if [ -f package-lock.json ]; then
+          npm ci || npm install
+        else
+          npm install
+        fi
+
+    - name: Build React (inside app/)
+      working-directory: app
+      run: npm run build
+
+    - name: Verify build output
+      working-directory: app
+      run: |
+        test -d build || (echo "❌ build/ no existe"; exit 1)
+        ls -la build | head -n 50
+        # Asegura que express esté en node_modules
+        test -d node_modules/express || (echo "❌ express no está instalado"; exit 1)
+
+    - name: Prune dev deps (keep prod deps for server)
+      working-directory: app
+      run: npm prune --omit=dev
+
+    - name: Create deploy zip at repo root
+      working-directory: app
+      run: |
+        # Incluye todo (incluido node_modules y build). Solo excluimos caches pesados
+        zip -r ../release.zip . -x "node_modules/.cache/*"
+
+    - name: Show zip content (debug)
+      run: |
+        unzip -l release.zip | head -n 100
+
+    - name: Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: release.zip
