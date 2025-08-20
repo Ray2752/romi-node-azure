@@ -48,6 +48,8 @@ jobs:
         cp package-lock.json deployment/
         # Copiar build del frontend
         cp -r build/ deployment/
+        # Copiar node_modules para que las dependencias estén disponibles
+        cp -r node_modules/ deployment/
         
     - name: 📋 List deployment contents
       run: |
