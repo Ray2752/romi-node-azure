@@ -46,10 +46,13 @@ jobs:
         cp server.js deployment/
         cp package.json deployment/
         cp package-lock.json deployment/
+        # Copiar archivos de configuración de deployment
+        cp .deployment deployment/
+        cp deploy.cmd deployment/
+        # Copiar archivos necesarios para la aplicación
+        cp -r src/ deployment/
         # Copiar build del frontend
         cp -r build/ deployment/
-        # Copiar node_modules para que las dependencias estén disponibles
-        cp -r node_modules/ deployment/
         
     - name: 📋 List deployment contents
       run: |
