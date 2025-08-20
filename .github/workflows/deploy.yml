@@ -45,7 +45,7 @@ jobs:
         # Copiar archivos del servidor
         cp server.js deployment/
         cp package.json deployment/
-        cp -r backend/ deployment/
+        cp package-lock.json deployment/
         # Copiar build del frontend
         cp -r build/ deployment/
         
