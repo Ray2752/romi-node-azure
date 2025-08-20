@@ -1,39 +1,66 @@
-name: Deploy ROMI AI to Azure Web App
+name: Deploy ROMI Task Manager to Azure
 
 on:
   push:
     branches:
       - main
+    paths:
+      - 'app/**'
+      - '.github/workflows/**'
   workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  AZURE_WEBAPP_PACKAGE_PATH: './app'
+  AZURE_WEBAPP_NAME: 'romi-node-webapp-12345'
 
 jobs:
   build-and-deploy:
+    name: Build and Deploy
     runs-on: ubuntu-latest
 
     steps:
-    - name: 'Checkout GitHub Action'
-      uses: actions/checkout@v3
+    - name: 🛎️ Checkout code
+      uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
+    - name: 🏗️ Setup Node.js
+      uses: actions/setup-node@v4
       with:
-        node-version: '18'
+        node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
-        cache-dependency-path: ./app/package-lock.json
+        cache-dependency-path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/package-lock.json
 
-    - name: Install dependencies
+    - name: 📦 Install dependencies
       run: |
-        cd app
-        npm ci --production
-
-    - name: Build React app
+        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        npm ci --only=production
+        
+    - name: 🔧 Build React frontend
       run: |
-        cd app
+        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
         npm run build
+        
+    - name: 📦 Prepare deployment package
+      run: |
+        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        # Crear directorio de deployment
+        mkdir -p deployment
+        # Copiar archivos del servidor
+        cp server.js deployment/
+        cp package.json deployment/
+        cp -r backend/ deployment/
+        # Copiar build del frontend
+        cp -r build/ deployment/
+        
+    - name: 📋 List deployment contents
+      run: |
+        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        echo "Deployment directory structure:"
+        find deployment -type f | head -20
 
-    - name: 'Deploy to Azure Web App'
-      uses: azure/webapps-deploy@v2
+    - name: 🚀 Deploy to Azure Web App
+      uses: azure/webapps-deploy@v3
       with:
-        app-name: 'romi-node-webapp-12345'
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
         publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        package: './app'
+        package: './app/deployment'
