@@ -2,65 +2,47 @@ name: Deploy ROMI Task Manager to Azure
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   workflow_dispatch:
 
 env:
   NODE_VERSION: '18'
-  AZURE_WEBAPP_PACKAGE_PATH: './app'
   AZURE_WEBAPP_NAME: 'romi-node-webapp-12345'
 
 jobs:
   build-and-deploy:
     name: Build and Deploy
     runs-on: ubuntu-latest
-
+    
     steps:
-    - name: 🛎️ Checkout code
+    - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: 🏗️ Setup Node.js
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
-        cache-dependency-path: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/package-lock.json
+        cache-dependency-path: './app/package-lock.json'
 
-    - name: 📦 Install dependencies
+    - name: Install dependencies and build
       run: |
-        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
+        cd ./app
         npm ci
-        
-    - name: 🔧 Build React frontend
-      run: |
-        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
         npm run build
         
-    - name: 📦 Prepare deployment package
+    - name: Prepare deployment package
       run: |
-        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        # Crear directorio de deployment
+        cd ./app
         mkdir -p deployment
-        # Copiar archivos del servidor
         cp server.js deployment/
         cp package.json deployment/
         cp package-lock.json deployment/
-        # Copiar archivos de configuración de deployment
-        cp .deployment deployment/
-        cp deploy.cmd deployment/
-        # Copiar archivos necesarios para la aplicación
+        cp .deployment deployment/ || echo "No .deployment file found"
         cp -r src/ deployment/
-        # Copiar build del frontend
         cp -r build/ deployment/
         
-    - name: 📋 List deployment contents
-      run: |
-        cd ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        echo "Deployment directory structure:"
-        find deployment -type f | head -20
-
-    - name: 🚀 Deploy to Azure Web App
+    - name: Deploy to Azure Web App
       uses: azure/webapps-deploy@v3
       with:
         app-name: ${{ env.AZURE_WEBAPP_NAME }}
