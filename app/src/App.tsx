@@ -81,11 +81,25 @@ interface NewTask {
 }
 
 // API Functions
-const API_BASE_URL = process.env.REACT_APP_API_URL || 
-  (process.env.NODE_ENV === 'production' 
-    ? '/api'  // En producción, usar rutas relativas (el backend debe estar en el mismo dominio)
-    : 'http://localhost:3001/api'); // En desarrollo, usar localhost
+// Force production API URL if we're running from a deployed domain
+const isLocalhost = window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1' ||
+                   window.location.hostname === '';
 
+// Additional check: if we're getting localhost errors but not actually on localhost,
+// force production mode
+const forceProduction = !isLocalhost || window.location.protocol === 'https:';
+
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (isLocalhost && !forceProduction
+    ? 'http://localhost:3001/api' // En desarrollo local, usar localhost
+    : '/api'); // En producción/deployment, usar rutas relativas
+
+console.log('Window location:', window.location.href);
+console.log('Hostname:', window.location.hostname);
+console.log('Protocol:', window.location.protocol);
+console.log('Is localhost:', isLocalhost);
+console.log('Force production:', forceProduction);
 console.log('Environment:', process.env.NODE_ENV);
 console.log('API Base URL:', API_BASE_URL);
 console.log('Custom API URL:', process.env.REACT_APP_API_URL);
