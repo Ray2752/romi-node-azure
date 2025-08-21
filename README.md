@@ -66,15 +66,58 @@ El frontend se sirve desde el build estático en `/app/build/`
 
 ## 🌐 **Deployment**
 
-### Terraform
+### **🔧 Configuración Inicial**
+
+1. **Clonar el repositorio:**
 ```bash
+git clone https://github.com/Ray2752/romi-node-azure.git
+cd romi-node-azure
+```
+
+2. **Configurar variables de entorno:**
+```bash
+# Crear terraform.tfvars
+azure_subscription_id = "tu-subscription-id"
+mongo_uri = "tu-mongodb-connection-string"
+app_name = "tu-app-name"
+```
+
+### **🏗️ Infrastructure as Code (Terraform)**
+
+```bash
+# Inicializar Terraform
 terraform init
+
+# Revisar plan de deployment
 terraform plan
+
+# Aplicar infraestructura
 terraform apply
 ```
 
-### Azure
-El proyecto se despliega automáticamente en Azure App Service con la configuración de Terraform.
+### **⚙️ Recursos Creados en Azure:**
+- **Resource Group:** `rg-romi-task-manager`
+- **App Service Plan:** `plan-romi-task-manager` (Linux B1)
+- **Web App:** `romi-task-manager` (Node.js 18 LTS)
+
+### **🚀 CI/CD Pipeline**
+
+El proyecto incluye **GitHub Actions** para deployment automático:
+
+- **Trigger:** Push a branch `main`
+- **Build:** React app + Node.js backend
+- **Deploy:** Azure App Service via publish profile
+- **URL:** https://romi-task-manager.azurewebsites.net
+
+### **📊 Arquitectura del Sistema**
+
+```
+Frontend (React) → Backend (Express) → MongoDB Atlas
+     ↓                    ↓                ↓
+ Material-UI        REST APIs       Task Collections
+ TypeScript         CORS/Helmet     User Data
+ Search/CRUD        Health Checks   Persistence
+```
 
 ## 📞 **Contacto**
 
