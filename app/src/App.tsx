@@ -138,9 +138,36 @@ const taskAPI = {
       console.log('Response ok:', response.ok);
       
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Error response:', errorText);
-        throw new Error(`Error al crear tarea: ${response.status} ${errorText}`);
+        const errorData = await response.json().catch(() => null);
+        console.error('Error response:', errorData);
+        
+        // Interpretar errores específicos del servidor
+        let errorMessage = 'Error al crear la tarea';
+        
+        if (errorData) {
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.errors && Array.isArray(errorData.errors)) {
+            errorMessage = errorData.errors.join(', ');
+          }
+          
+          // Traducir algunos errores comunes
+          if (errorMessage.includes('fecha de vencimiento debe ser futura')) {
+            errorMessage = 'La fecha de vencimiento debe ser en el futuro';
+          } else if (errorMessage.includes('título es requerido')) {
+            errorMessage = 'El título de la tarea es requerido';
+          } else if (errorMessage.includes('validation')) {
+            errorMessage = 'Los datos de la tarea no son válidos. Verifica la información ingresada.';
+          }
+        }
+        
+        // Mostrar el error específico al usuario
+        const showSnackbar = (message: string, severity: 'success' | 'error') => {
+          // Esta función se ejecutará en el contexto del componente
+          console.error('Server error:', message);
+        };
+        
+        throw new Error(errorMessage);
       }
       
       const result = await response.json();
@@ -149,18 +176,26 @@ const taskAPI = {
       return result.data || result;
     } catch (error) {
       console.error('Error en createTask:', error);
-      console.error('Error details:', {
-        message: error instanceof Error ? error.message : String(error),
-        name: error instanceof Error ? error.name : 'Unknown',
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      return null;
+      
+      // Mejorar el manejo de errores de red
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('No se puede conectar al servidor. Verifica tu conexión a internet.');
+      }
+      
+      // Si ya es un error con mensaje específico, lo mantenemos
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      throw new Error('Error inesperado al crear la tarea');
     }
   },
 
   // Actualizar tarea
   updateTask: async (id: string, updates: Partial<Task>): Promise<Task | null> => {
     try {
+      console.log('Updating task:', id, 'with data:', updates);
+      
       const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
         method: 'PUT',
         headers: {
@@ -168,25 +203,87 @@ const taskAPI = {
         },
         body: JSON.stringify(updates),
       });
-      if (!response.ok) throw new Error('Error al actualizar tarea');
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error('Update error response:', errorData);
+        
+        let errorMessage = 'Error al actualizar la tarea';
+        
+        if (errorData) {
+          if (errorData.message) {
+            errorMessage = errorData.message;
+          } else if (errorData.errors && Array.isArray(errorData.errors)) {
+            errorMessage = errorData.errors.join(', ');
+          }
+          
+          // Traducir errores comunes
+          if (errorMessage.includes('fecha de vencimiento debe ser futura')) {
+            errorMessage = 'La fecha de vencimiento debe ser en el futuro';
+          } else if (errorMessage.includes('not found')) {
+            errorMessage = 'La tarea no existe o fue eliminada';
+          }
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
       const result = await response.json();
+      console.log('Update task result:', result);
       return result.data || result;
     } catch (error) {
-      console.error('Error:', error);
-      return null;
+      console.error('Error en updateTask:', error);
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('No se puede conectar al servidor. Verifica tu conexión a internet.');
+      }
+      
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      throw new Error('Error inesperado al actualizar la tarea');
     }
   },
 
   // Eliminar tarea
   deleteTask: async (id: string): Promise<boolean> => {
     try {
+      console.log('Deleting task:', id);
+      
       const response = await fetch(`${API_BASE_URL}/tasks/${id}`, {
         method: 'DELETE',
       });
-      return response.ok;
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error('Delete error response:', errorData);
+        
+        let errorMessage = 'Error al eliminar la tarea';
+        
+        if (response.status === 404) {
+          errorMessage = 'La tarea no existe o ya fue eliminada';
+        } else if (errorData && errorData.message) {
+          errorMessage = errorData.message;
+        }
+        
+        throw new Error(errorMessage);
+      }
+      
+      console.log('Task deleted successfully');
+      return true;
     } catch (error) {
-      console.error('Error:', error);
-      return false;
+      console.error('Error en deleteTask:', error);
+      
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('No se puede conectar al servidor. Verifica tu conexión a internet.');
+      }
+      
+      if (error instanceof Error) {
+        throw error;
+      }
+      
+      throw new Error('Error inesperado al eliminar la tarea');
     }
   },
 
@@ -281,6 +378,9 @@ function App() {
     tags: [],
   });
 
+  // Estado para errores de validación
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+
   // Cargar tareas al montar el componente
   useEffect(() => {
     // Primero verificar que la API esté disponible
@@ -332,41 +432,173 @@ function App() {
 
   // Crear nueva tarea
   const handleCreateTask = async () => {
-    if (!newTask.title.trim()) {
-      showSnackbar('El título es requerido', 'error');
+    // Validaciones del lado del cliente
+    const validationError = validateTaskData(newTask);
+    if (validationError) {
+      showSnackbar(validationError, 'error');
       return;
     }
 
-    const createdTask = await taskAPI.createTask(newTask);
-    if (createdTask) {
-      setTasks(prev => [...prev, createdTask]);
-      resetNewTask();
-      setOpenTaskDialog(false);
-      showSnackbar('Tarea creada exitosamente', 'success');
-    } else {
-      showSnackbar('Error al crear la tarea', 'error');
+    // Limpiar los datos antes de enviar
+    const taskData: any = {
+      title: newTask.title.trim(),
+      description: newTask.description.trim(),
+      status: newTask.status,
+      priority: newTask.priority,
+    };
+
+    // Solo agregar campos opcionales si tienen valor
+    if (newTask.category?.trim()) {
+      taskData.category = newTask.category.trim();
     }
+
+    if (newTask.dueDate?.trim()) {
+      taskData.dueDate = newTask.dueDate.trim();
+    }
+
+    if (newTask.tags && newTask.tags.length > 0) {
+      taskData.tags = newTask.tags;
+    }
+
+    console.log('Sending task data:', taskData);
+
+    try {
+      const createdTask = await taskAPI.createTask(taskData);
+      if (createdTask) {
+        setTasks(prev => [...prev, createdTask]);
+        resetNewTask();
+        setOpenTaskDialog(false);
+        showSnackbar('Tarea creada exitosamente', 'success');
+      } else {
+        showSnackbar('No se pudo crear la tarea. Intenta nuevamente.', 'error');
+      }
+    } catch (error) {
+      // Mostrar el error específico del servidor
+      const errorMessage = error instanceof Error ? error.message : 'Error al crear la tarea';
+      showSnackbar(errorMessage, 'error');
+    }
+  };
+
+  // Función para validar datos de tarea del lado del cliente
+  const validateTaskData = (task: NewTask): string | null => {
+    if (!task.title.trim()) {
+      return 'El título es requerido';
+    }
+
+    if (task.title.trim().length > 100) {
+      return 'El título no puede tener más de 100 caracteres';
+    }
+
+    if (task.description.length > 500) {
+      return 'La descripción no puede tener más de 500 caracteres';
+    }
+
+    if (task.category && task.category.length > 50) {
+      return 'La categoría no puede tener más de 50 caracteres';
+    }
+
+    if (task.dueDate?.trim()) {
+      const dueDate = new Date(task.dueDate);
+      const now = new Date();
+      
+      if (isNaN(dueDate.getTime())) {
+        return 'La fecha de vencimiento no es válida';
+      }
+
+      if (dueDate <= now) {
+        return 'La fecha de vencimiento debe ser en el futuro';
+      }
+    }
+
+    return null;
+  };
+
+  // Función para validar un campo específico
+  const validateField = (fieldName: string, value: string) => {
+    const errors = { ...validationErrors };
+    
+    switch (fieldName) {
+      case 'title':
+        if (!value.trim()) {
+          errors.title = 'El título es requerido';
+        } else if (value.trim().length > 100) {
+          errors.title = 'El título no puede tener más de 100 caracteres';
+        } else {
+          delete errors.title;
+        }
+        break;
+        
+      case 'description':
+        if (value.length > 500) {
+          errors.description = 'La descripción no puede tener más de 500 caracteres';
+        } else {
+          delete errors.description;
+        }
+        break;
+        
+      case 'category':
+        if (value.length > 50) {
+          errors.category = 'La categoría no puede tener más de 50 caracteres';
+        } else {
+          delete errors.category;
+        }
+        break;
+        
+      case 'dueDate':
+        if (value.trim()) {
+          const dueDate = new Date(value);
+          const now = new Date();
+          
+          if (isNaN(dueDate.getTime())) {
+            errors.dueDate = 'La fecha de vencimiento no es válida';
+          } else if (dueDate <= now) {
+            errors.dueDate = 'La fecha de vencimiento debe ser en el futuro';
+          } else {
+            delete errors.dueDate;
+          }
+        } else {
+          delete errors.dueDate;
+        }
+        break;
+    }
+    
+    setValidationErrors(errors);
   };
 
   // Actualizar tarea
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
-    const updatedTask = await taskAPI.updateTask(id, updates);
-    if (updatedTask) {
-      setTasks(prev => prev.map(task => task._id === id ? updatedTask : task));
-      showSnackbar('Tarea actualizada exitosamente', 'success');
-    } else {
-      showSnackbar('Error al actualizar la tarea', 'error');
+    try {
+      const updatedTask = await taskAPI.updateTask(id, updates);
+      if (updatedTask) {
+        setTasks(prev => prev.map(task => task._id === id ? updatedTask : task));
+        showSnackbar('Tarea actualizada exitosamente', 'success');
+      } else {
+        showSnackbar('No se pudo actualizar la tarea. Intenta nuevamente.', 'error');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al actualizar la tarea';
+      showSnackbar(errorMessage, 'error');
     }
   };
 
   // Eliminar tarea
   const handleDeleteTask = async (id: string) => {
-    const success = await taskAPI.deleteTask(id);
-    if (success) {
-      setTasks(prev => prev.filter(task => task._id !== id));
-      showSnackbar('Tarea eliminada exitosamente', 'success');
-    } else {
-      showSnackbar('Error al eliminar la tarea', 'error');
+    try {
+      // Confirmar eliminación
+      if (!window.confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+        return;
+      }
+
+      const success = await taskAPI.deleteTask(id);
+      if (success) {
+        setTasks(prev => prev.filter(task => task._id !== id));
+        showSnackbar('Tarea eliminada exitosamente', 'success');
+      } else {
+        showSnackbar('No se pudo eliminar la tarea. Intenta nuevamente.', 'error');
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Error al eliminar la tarea';
+      showSnackbar(errorMessage, 'error');
     }
   };
 
@@ -386,6 +618,7 @@ function App() {
       dueDate: '',
       tags: [],
     });
+    setValidationErrors({});
   };
 
   const showSnackbar = (message: string, severity: 'success' | 'error') => {
@@ -1047,9 +1280,14 @@ function App() {
               fullWidth
               label="Título"
               value={newTask.title}
-              onChange={(e) => setNewTask(prev => ({ ...prev, title: e.target.value }))}
+              onChange={(e) => {
+                setNewTask(prev => ({ ...prev, title: e.target.value }));
+                validateField('title', e.target.value);
+              }}
               required
               autoFocus
+              error={!!validationErrors.title}
+              helperText={validationErrors.title || 'Ingresa un título descriptivo para la tarea'}
             />
             
             <TextField
@@ -1058,7 +1296,12 @@ function App() {
               multiline
               rows={3}
               value={newTask.description}
-              onChange={(e) => setNewTask(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => {
+                setNewTask(prev => ({ ...prev, description: e.target.value }));
+                validateField('description', e.target.value);
+              }}
+              error={!!validationErrors.description}
+              helperText={validationErrors.description || 'Describe los detalles de la tarea (opcional)'}
             />
             
             <Box sx={{ display: 'flex', gap: 2 }}>
@@ -1095,7 +1338,12 @@ function App() {
                 fullWidth
                 label="Categoría"
                 value={newTask.category}
-                onChange={(e) => setNewTask(prev => ({ ...prev, category: e.target.value }))}
+                onChange={(e) => {
+                  setNewTask(prev => ({ ...prev, category: e.target.value }));
+                  validateField('category', e.target.value);
+                }}
+                error={!!validationErrors.category}
+                helperText={validationErrors.category || 'Ej: Trabajo, Personal, Estudio (opcional)'}
               />
               
               <TextField
@@ -1103,10 +1351,15 @@ function App() {
                 label="Fecha límite"
                 type="datetime-local"
                 value={newTask.dueDate}
-                onChange={(e) => setNewTask(prev => ({ ...prev, dueDate: e.target.value }))}
+                onChange={(e) => {
+                  setNewTask(prev => ({ ...prev, dueDate: e.target.value }));
+                  validateField('dueDate', e.target.value);
+                }}
                 InputLabelProps={{
                   shrink: true,
                 }}
+                error={!!validationErrors.dueDate}
+                helperText={validationErrors.dueDate || 'Fecha y hora para completar la tarea (opcional)'}
               />
             </Box>
           </Box>
@@ -1119,8 +1372,13 @@ function App() {
           <Button 
             onClick={handleSaveTask} 
             variant="contained"
+            disabled={Object.keys(validationErrors).length > 0 || !newTask.title.trim()}
             sx={{
               background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
+              '&:disabled': {
+                background: '#e2e8f0',
+                color: '#64748b',
+              },
             }}
           >
             {editingTask ? 'Actualizar' : 'Crear'}
