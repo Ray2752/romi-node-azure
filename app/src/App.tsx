@@ -9,9 +9,7 @@ import {
   CardContent,
   TextField,
   InputAdornment,
-  Avatar,
   IconButton,
-  Badge,
   Chip,
   Button,
   LinearProgress,
@@ -30,8 +28,6 @@ import {
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Notifications as NotificationsIcon,
-  ExpandMore as ExpandMoreIcon,
   PlayArrow as PlayIcon,
   AccessTime as TimeIcon,
   Link as LinkIcon,
@@ -380,6 +376,9 @@ function App() {
 
   // Estado para errores de validación
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+  
+  // Estado para búsqueda
+  const [searchTerm, setSearchTerm] = useState('');
 
   // Cargar tareas al montar el componente
   useEffect(() => {
@@ -658,13 +657,27 @@ function App() {
     resetNewTask();
   };
 
-  // Calculamos estadísticas de las tareas
+  // Función para filtrar tareas basada en el término de búsqueda
+  const filteredTasks = Array.isArray(tasks) ? tasks.filter(task => {
+    if (!searchTerm.trim()) return true; // Si no hay término de búsqueda, mostrar todas
+    
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      task.title.toLowerCase().includes(searchLower) ||
+      task.description.toLowerCase().includes(searchLower) ||
+      task.status.toLowerCase().includes(searchLower) ||
+      task.priority.toLowerCase().includes(searchLower) ||
+      (task.category && task.category.toLowerCase().includes(searchLower))
+    );
+  }) : [];
+
+  // Calculamos estadísticas de las tareas filtradas
   const stats = {
-    total: Array.isArray(tasks) ? tasks.length : 0,
-    pending: Array.isArray(tasks) ? tasks.filter(t => t.status === 'pending').length : 0,
-    inProgress: Array.isArray(tasks) ? tasks.filter(t => t.status === 'in-progress').length : 0,
-    completed: Array.isArray(tasks) ? tasks.filter(t => t.status === 'completed').length : 0,
-    urgent: Array.isArray(tasks) ? tasks.filter(t => t.priority === 'urgent').length : 0,
+    total: Array.isArray(filteredTasks) ? filteredTasks.length : 0,
+    pending: Array.isArray(filteredTasks) ? filteredTasks.filter(t => t.status === 'pending').length : 0,
+    inProgress: Array.isArray(filteredTasks) ? filteredTasks.filter(t => t.status === 'in-progress').length : 0,
+    completed: Array.isArray(filteredTasks) ? filteredTasks.filter(t => t.status === 'completed').length : 0,
+    urgent: Array.isArray(filteredTasks) ? filteredTasks.filter(t => t.priority === 'urgent').length : 0,
   };
 
   // Función para obtener color de prioridad
@@ -836,6 +849,8 @@ function App() {
               <TextField
                 placeholder="Search anything..."
                 size="small"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 sx={{
                   width: 300,
                   '& .MuiOutlinedInput-root': {
@@ -853,15 +868,6 @@ function App() {
                   ),
                 }}
               />
-              <Badge badgeContent={4} color="error">
-                <IconButton>
-                  <NotificationsIcon />
-                </IconButton>
-              </Badge>
-              <Avatar src="/api/placeholder/32/32" />
-              <IconButton>
-                <ExpandMoreIcon />
-              </IconButton>
             </Box>
           </Box>
 
@@ -1126,14 +1132,18 @@ function App() {
               <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
                 <LinearProgress sx={{ width: '100%' }} />
               </Box>
-            ) : !Array.isArray(tasks) || tasks.length === 0 ? (
+            ) : !Array.isArray(filteredTasks) || filteredTasks.length === 0 ? (
               <Box sx={{ textAlign: 'center', p: 4, color: '#64748b' }}>
-                <Typography variant="body1">No hay tareas disponibles</Typography>
-                <Typography variant="body2">Crea tu primera tarea usando el botón de arriba</Typography>
+                <Typography variant="body1">
+                  {searchTerm ? 'No se encontraron tareas que coincidan con la búsqueda' : 'No hay tareas disponibles'}
+                </Typography>
+                <Typography variant="body2">
+                  {searchTerm ? 'Intenta con otros términos de búsqueda' : 'Crea tu primera tarea usando el botón de arriba'}
+                </Typography>
               </Box>
             ) : (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {tasks.map((task) => (
+                {filteredTasks.map((task) => (
                   <Box 
                     key={task._id}
                     sx={{ 
