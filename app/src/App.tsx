@@ -81,7 +81,14 @@ interface NewTask {
 }
 
 // API Functions
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = process.env.REACT_APP_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? '/api'  // En producción, usar rutas relativas (el backend debe estar en el mismo dominio)
+    : 'http://localhost:3001/api'); // En desarrollo, usar localhost
+
+console.log('Environment:', process.env.NODE_ENV);
+console.log('API Base URL:', API_BASE_URL);
+console.log('Custom API URL:', process.env.REACT_APP_API_URL);
 
 const taskAPI = {
   // Obtener todas las tareas
@@ -102,6 +109,9 @@ const taskAPI = {
   // Crear nueva tarea
   createTask: async (task: NewTask): Promise<Task | null> => {
     try {
+      console.log('Creating task with URL:', `${API_BASE_URL}/tasks`);
+      console.log('Task data:', task);
+      
       const response = await fetch(`${API_BASE_URL}/tasks`, {
         method: 'POST',
         headers: {
@@ -109,12 +119,27 @@ const taskAPI = {
         },
         body: JSON.stringify(task),
       });
-      if (!response.ok) throw new Error('Error al crear tarea');
+      
+      console.log('Response status:', response.status);
+      console.log('Response ok:', response.ok);
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`Error al crear tarea: ${response.status} ${errorText}`);
+      }
+      
       const result = await response.json();
+      console.log('Create task result:', result);
       // El backend puede devolver {success: true, data: {...}} o directamente la tarea
       return result.data || result;
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error en createTask:', error);
+      console.error('Error details:', {
+        message: error instanceof Error ? error.message : String(error),
+        name: error instanceof Error ? error.name : 'Unknown',
+        stack: error instanceof Error ? error.stack : undefined
+      });
       return null;
     }
   },
@@ -147,6 +172,19 @@ const taskAPI = {
       return response.ok;
     } catch (error) {
       console.error('Error:', error);
+      return false;
+    }
+  },
+
+  // Test API health
+  healthCheck: async (): Promise<boolean> => {
+    try {
+      console.log('Testing API health at:', `${API_BASE_URL}/health`);
+      const response = await fetch(`${API_BASE_URL}/health`);
+      console.log('Health check response:', response.status, response.ok);
+      return response.ok;
+    } catch (error) {
+      console.error('Health check failed:', error);
       return false;
     }
   },
@@ -231,7 +269,26 @@ function App() {
 
   // Cargar tareas al montar el componente
   useEffect(() => {
-    loadTasks();
+    // Primero verificar que la API esté disponible
+    const initializeApp = async () => {
+      console.log('Initializing app...');
+      const apiHealthy = await taskAPI.healthCheck();
+      console.log('API healthy:', apiHealthy);
+      
+      if (apiHealthy) {
+        await loadTasks();
+      } else {
+        console.error('API no está disponible');
+        setSnackbar({ 
+          open: true, 
+          message: 'No se puede conectar al servidor. Verifica tu conexión.', 
+          severity: 'error' 
+        });
+        setLoading(false);
+      }
+    };
+    
+    initializeApp();
   }, []);
 
   // Re-generar datos del gráfico cuando cambien las tareas o el tab activo
