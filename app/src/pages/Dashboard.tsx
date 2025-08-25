@@ -48,8 +48,6 @@ interface Task {
 export const Dashboard: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Fetch tasks data
   useEffect(() => {
     const fetchTasks = async () => {
       try {
@@ -67,19 +65,13 @@ export const Dashboard: React.FC = () => {
 
     fetchTasks();
   }, []);
-
-  // Calculate statistics
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(task => task.status === 'completed').length;
   const pendingTasks = tasks.filter(task => task.status !== 'completed').length;
   const inProgressTasks = tasks.filter(task => task.status === 'in-progress').length;
-
-  // Recent tasks (last 5)
   const recentTasks = tasks
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 5);
-
-  // Upcoming deadlines
   const upcomingDeadlines = tasks
     .filter(task => task.dueDate && task.status !== 'completed')
     .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
@@ -164,7 +156,7 @@ export const Dashboard: React.FC = () => {
                           priority: task.priority,
                           dueDate: task.dueDate,
                           assignee: task.assignee || { name: 'Ray Admin' },
-                          progress: Math.floor(Math.random() * 100), // Random progress for demo
+                          progress: Math.floor(Math.random() * 100),
                           tags: task.tags,
                         }}
                       />

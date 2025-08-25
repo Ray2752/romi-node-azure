@@ -1,11 +1,9 @@
 import React from 'react';
 import { Card as MuiCard, CardProps } from '@mui/material';
 import { styled } from '@mui/material/styles';
-
-// Styled Card basado en diseño de Figma
 const StyledCard = styled(MuiCard)(({ theme }) => ({
-  borderRadius: 12, // Cambiar por valor de Figma
-  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', // Cambiar por sombra de Figma
+  borderRadius: 12,
+  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
   border: 'none',
   overflow: 'hidden',
   transition: 'all 0.3s ease',

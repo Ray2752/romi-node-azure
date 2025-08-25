@@ -103,8 +103,6 @@ export const StatCard: React.FC<StatCardProps> = ({
     </Card>
   );
 };
-
-// Componentes específicos para diferentes estadísticas
 export const TotalTasksCard: React.FC<{ count: number; change?: string }> = ({ count, change }) => (
   <StatCard
     title="Total Tasks"
@@ -137,8 +135,6 @@ export const PendingTasksCard: React.FC<{ count: number; change?: string }> = ({
     trend="down"
   />
 );
-
-// Componente de progreso de tareas
 interface TaskProgressCardProps {
   completed: number;
   total: number;

@@ -1,25 +1,23 @@
 import { createTheme } from '@mui/material/styles';
-
-// Theme personalizado basado en Figma Task Management Design
 export const theme = createTheme({
   palette: {
     primary: {
-      main: '#6366f1', // Indigo moderno del diseño
+      main: '#6366f1',
       light: '#818cf8',
       dark: '#4f46e5',
     },
     secondary: {
-      main: '#10b981', // Verde para estados positivos
+      main: '#10b981',
       light: '#34d399',
       dark: '#059669',
     },
     background: {
-      default: '#f8fafc', // Background suave
+      default: '#f8fafc',
       paper: '#ffffff',
     },
     text: {
-      primary: '#1e293b', // Texto principal oscuro
-      secondary: '#64748b', // Texto secundario gris
+      primary: '#1e293b',
+      secondary: '#64748b',
     },
     grey: {
       50: '#f8fafc',

@@ -130,7 +130,7 @@ const ApiTestPanel: React.FC = () => {
     try {
       let url = test.endpoint;
       
-      // Reemplazar :id si es necesario
+
       if (test.requiresId && taskId) {
         url = url.replace(':id', taskId);
       } else if (test.requiresId && !taskId) {
@@ -143,8 +143,6 @@ const ApiTestPanel: React.FC = () => {
           'Content-Type': 'application/json',
         },
       };
-
-      // Añadir body si es necesario
       if (test.bodyTemplate && (test.method === 'POST' || test.method === 'PUT' || test.method === 'PATCH')) {
         const bodyToSend = customBody[testKey] 
           ? JSON.parse(customBody[testKey]) 

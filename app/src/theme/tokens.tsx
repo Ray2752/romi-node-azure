@@ -1,6 +1,6 @@
-// Variables de diseño extraídas de Figma
+
 export const designTokens = {
-  // Colores (extraer de Figma)
+
   colors: {
     primary: '#1976d2',
     secondary: '#dc004e',
@@ -20,17 +20,17 @@ export const designTokens = {
     },
   },
   
-  // Tipografía (extraer de Figma)
+
   typography: {
     fontFamily: 'Roboto, sans-serif',
     sizes: {
-      xs: '0.75rem',   // 12px
-      sm: '0.875rem',  // 14px
-      md: '1rem',      // 16px
-      lg: '1.125rem',  // 18px
-      xl: '1.25rem',   // 20px
-      '2xl': '1.5rem', // 24px
-      '3xl': '2rem',   // 32px
+      xs: '0.75rem',
+      sm: '0.875rem',
+      md: '1rem',
+      lg: '1.125rem',
+      xl: '1.25rem',
+      '2xl': '1.5rem',
+      '3xl': '2rem',
     },
     weights: {
       light: 300,
@@ -41,7 +41,7 @@ export const designTokens = {
     },
   },
   
-  // Espaciado (extraer de Figma)
+
   spacing: {
     xs: '4px',
     sm: '8px',
@@ -52,7 +52,7 @@ export const designTokens = {
     '3xl': '64px',
   },
   
-  // Bordes y sombras (extraer de Figma)
+
   borders: {
     radius: {
       sm: '4px',
@@ -75,7 +75,7 @@ export const designTokens = {
     xl: '0 8px 32px rgba(0, 0, 0, 0.2)',
   },
   
-  // Breakpoints para responsive
+
   breakpoints: {
     mobile: '480px',
     tablet: '768px',

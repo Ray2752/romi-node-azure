@@ -17,7 +17,6 @@ provider "azurerm" {
   subscription_id = var.azure_subscription_id
 }
 
-# Resource Group
 resource "azurerm_resource_group" "romi_task_manager_rg" {
   name     = "rg-romi-task-manager"
   location = var.location
@@ -30,7 +29,6 @@ resource "azurerm_resource_group" "romi_task_manager_rg" {
   }
 }
 
-# App Service Plan
 resource "azurerm_service_plan" "romi_task_manager_plan" {
   name                = "plan-romi-task-manager"
   location            = azurerm_resource_group.romi_task_manager_rg.location
@@ -47,7 +45,6 @@ resource "azurerm_service_plan" "romi_task_manager_plan" {
   }
 }
 
-# App Service (Web App)
 resource "azurerm_linux_web_app" "romi_task_manager_app" {
   name                = var.app_name
   location            = azurerm_resource_group.romi_task_manager_rg.location

@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-
-// Esquema para las tareas
 const taskSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -54,16 +52,12 @@ const taskSchema = new mongoose.Schema({
     default: Date.now
   }
 }, {
-  timestamps: true // Agrega createdAt y updatedAt automáticamente
+  timestamps: true
 });
-
-// Middleware para actualizar updatedAt antes de cada save
 taskSchema.pre('save', function(next) {
   this.updatedAt = new Date();
   next();
 });
-
-// Métodos del esquema
 taskSchema.methods.markAsCompleted = function() {
   this.status = 'completed';
   return this.save();
@@ -73,8 +67,6 @@ taskSchema.methods.markAsInProgress = function() {
   this.status = 'in-progress';
   return this.save();
 };
-
-// Índices para optimizar consultas
 taskSchema.index({ status: 1 });
 taskSchema.index({ priority: 1 });
 taskSchema.index({ category: 1 });

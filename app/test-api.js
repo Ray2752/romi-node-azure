@@ -1,4 +1,4 @@
-// Script para probar la funcionalidad completa de la API
+
 const API_BASE_URL = 'http://localhost:3001/api';
 
 // Función para hacer peticiones HTTP

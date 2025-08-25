@@ -113,7 +113,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   },
                 },
               }}
-              selected={item.text === 'Dashboard'} // Por defecto Dashboard seleccionado
+              selected={item.text === 'Dashboard'}
             >
               <ListItemIcon sx={{ minWidth: 40, color: 'inherit' }}>
                 {item.icon}
@@ -213,7 +213,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           backgroundColor: 'background.default',
           minHeight: '100vh',
           p: { xs: 2, md: 3 },
-          pt: { xs: 8, md: 3 }, // Extra padding top for mobile menu button
+          pt: { xs: 8, md: 3 },
           width: { md: `calc(100% - ${drawerWidth}px)` },
         }}
       >

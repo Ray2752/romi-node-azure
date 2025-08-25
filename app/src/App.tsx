@@ -52,7 +52,6 @@ import {
   Tooltip,
 } from 'recharts';
 
-// Interfaces TypeScript
 interface Task {
   _id: string;
   title: string;
@@ -76,20 +75,16 @@ interface NewTask {
   tags?: string[];
 }
 
-// API Functions
-// Force production API URL if we're running from a deployed domain
 const isLocalhost = window.location.hostname === 'localhost' || 
                    window.location.hostname === '127.0.0.1' ||
                    window.location.hostname === '';
 
-// Additional check: if we're getting localhost errors but not actually on localhost,
-// force production mode
 const forceProduction = !isLocalhost || window.location.protocol === 'https:';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 
   (isLocalhost && !forceProduction
-    ? 'http://localhost:3001/api' // En desarrollo local, usar localhost
-    : '/api'); // En producción/deployment, usar rutas relativas
+    ? 'http://localhost:3001/api'
+    : '/api');
 
 console.log('Window location:', window.location.href);
 console.log('Hostname:', window.location.hostname);
@@ -101,13 +96,12 @@ console.log('API Base URL:', API_BASE_URL);
 console.log('Custom API URL:', process.env.REACT_APP_API_URL);
 
 const taskAPI = {
-  // Obtener todas las tareas
+
   getTasks: async (): Promise<Task[]> => {
     try {
       const response = await fetch(`${API_BASE_URL}/tasks`);
       if (!response.ok) throw new Error('Error al obtener tareas');
       const result = await response.json();
-      // El backend devuelve {success: true, data: [...]}
       const data = result.data || result;
       return Array.isArray(data) ? data : [];
     } catch (error) {
@@ -116,7 +110,6 @@ const taskAPI = {
     }
   },
 
-  // Crear nueva tarea
   createTask: async (task: NewTask): Promise<Task | null> => {
     try {
       console.log('Creating task with URL:', `${API_BASE_URL}/tasks`);
@@ -137,7 +130,7 @@ const taskAPI = {
         const errorData = await response.json().catch(() => null);
         console.error('Error response:', errorData);
         
-        // Interpretar errores específicos del servidor
+
         let errorMessage = 'Error al crear la tarea';
         
         if (errorData) {
@@ -147,7 +140,7 @@ const taskAPI = {
             errorMessage = errorData.errors.join(', ');
           }
           
-          // Traducir algunos errores comunes
+
           if (errorMessage.includes('fecha de vencimiento debe ser futura')) {
             errorMessage = 'La fecha de vencimiento debe ser en el futuro';
           } else if (errorMessage.includes('título es requerido')) {
@@ -157,9 +150,9 @@ const taskAPI = {
           }
         }
         
-        // Mostrar el error específico al usuario
+
         const showSnackbar = (message: string, severity: 'success' | 'error') => {
-          // Esta función se ejecutará en el contexto del componente
+
           console.error('Server error:', message);
         };
         
@@ -168,17 +161,17 @@ const taskAPI = {
       
       const result = await response.json();
       console.log('Create task result:', result);
-      // El backend puede devolver {success: true, data: {...}} o directamente la tarea
+
       return result.data || result;
     } catch (error) {
       console.error('Error en createTask:', error);
       
-      // Mejorar el manejo de errores de red
+
       if (error instanceof TypeError && error.message.includes('fetch')) {
         throw new Error('No se puede conectar al servidor. Verifica tu conexión a internet.');
       }
       
-      // Si ya es un error con mensaje específico, lo mantenemos
+
       if (error instanceof Error) {
         throw error;
       }
@@ -186,8 +179,6 @@ const taskAPI = {
       throw new Error('Error inesperado al crear la tarea');
     }
   },
-
-  // Actualizar tarea
   updateTask: async (id: string, updates: Partial<Task>): Promise<Task | null> => {
     try {
       console.log('Updating task:', id, 'with data:', updates);
@@ -213,7 +204,7 @@ const taskAPI = {
             errorMessage = errorData.errors.join(', ');
           }
           
-          // Traducir errores comunes
+
           if (errorMessage.includes('fecha de vencimiento debe ser futura')) {
             errorMessage = 'La fecha de vencimiento debe ser en el futuro';
           } else if (errorMessage.includes('not found')) {
@@ -241,8 +232,6 @@ const taskAPI = {
       throw new Error('Error inesperado al actualizar la tarea');
     }
   },
-
-  // Eliminar tarea
   deleteTask: async (id: string): Promise<boolean> => {
     try {
       console.log('Deleting task:', id);
@@ -282,8 +271,6 @@ const taskAPI = {
       throw new Error('Error inesperado al eliminar la tarea');
     }
   },
-
-  // Test API health
   healthCheck: async (): Promise<boolean> => {
     try {
       console.log('Testing API health at:', `${API_BASE_URL}/health`);
@@ -296,8 +283,6 @@ const taskAPI = {
     }
   },
 };
-
-// Theme basado en las imágenes de Figma
 const octomTheme = createTheme({
   palette: {
     primary: {
@@ -355,7 +340,7 @@ const octomTheme = createTheme({
 });
 
 function App() {
-  // Estados para la funcionalidad
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [openTaskDialog, setOpenTaskDialog] = useState(false);
@@ -363,7 +348,7 @@ function App() {
   const [activeTab, setActiveTab] = useState('Monthly');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   
-  // Estados para nueva tarea
+
   const [newTask, setNewTask] = useState<NewTask>({
     title: '',
     description: '',
@@ -373,16 +358,12 @@ function App() {
     dueDate: '',
     tags: [],
   });
-
-  // Estado para errores de validación
   const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
   
-  // Estado para búsqueda
-  const [searchTerm, setSearchTerm] = useState('');
 
-  // Cargar tareas al montar el componente
+  const [searchTerm, setSearchTerm] = useState('');
   useEffect(() => {
-    // Primero verificar que la API esté disponible
+
     const initializeApp = async () => {
       console.log('Initializing app...');
       const apiHealthy = await taskAPI.healthCheck();
@@ -403,18 +384,14 @@ function App() {
     
     initializeApp();
   }, []);
-
-  // Re-generar datos del gráfico cuando cambien las tareas o el tab activo
   useEffect(() => {
-    // Este efecto fuerza una re-renderización cuando las tareas o el tab cambian
-    // No necesita hacer nada específico, solo asegurar que el componente se re-renderice
   }, [tasks, activeTab]);
 
   const loadTasks = async () => {
     setLoading(true);
     try {
       const fetchedTasks = await taskAPI.getTasks();
-      // Asegurar que siempre sea un array
+
       if (Array.isArray(fetchedTasks)) {
         setTasks(fetchedTasks);
       } else {
@@ -428,25 +405,19 @@ function App() {
     }
     setLoading(false);
   };
-
-  // Crear nueva tarea
   const handleCreateTask = async () => {
-    // Validaciones del lado del cliente
+
     const validationError = validateTaskData(newTask);
     if (validationError) {
       showSnackbar(validationError, 'error');
       return;
     }
-
-    // Limpiar los datos antes de enviar
     const taskData: any = {
       title: newTask.title.trim(),
       description: newTask.description.trim(),
       status: newTask.status,
       priority: newTask.priority,
     };
-
-    // Solo agregar campos opcionales si tienen valor
     if (newTask.category?.trim()) {
       taskData.category = newTask.category.trim();
     }
@@ -472,13 +443,11 @@ function App() {
         showSnackbar('No se pudo crear la tarea. Intenta nuevamente.', 'error');
       }
     } catch (error) {
-      // Mostrar el error específico del servidor
+
       const errorMessage = error instanceof Error ? error.message : 'Error al crear la tarea';
       showSnackbar(errorMessage, 'error');
     }
   };
-
-  // Función para validar datos de tarea del lado del cliente
   const validateTaskData = (task: NewTask): string | null => {
     if (!task.title.trim()) {
       return 'El título es requerido';
@@ -511,8 +480,6 @@ function App() {
 
     return null;
   };
-
-  // Función para validar un campo específico
   const validateField = (fieldName: string, value: string) => {
     const errors = { ...validationErrors };
     
@@ -563,8 +530,6 @@ function App() {
     
     setValidationErrors(errors);
   };
-
-  // Actualizar tarea
   const handleUpdateTask = async (id: string, updates: Partial<Task>) => {
     try {
       const updatedTask = await taskAPI.updateTask(id, updates);
@@ -579,11 +544,9 @@ function App() {
       showSnackbar(errorMessage, 'error');
     }
   };
-
-  // Eliminar tarea
   const handleDeleteTask = async (id: string) => {
     try {
-      // Confirmar eliminación
+
       if (!window.confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
         return;
       }
@@ -600,13 +563,9 @@ function App() {
       showSnackbar(errorMessage, 'error');
     }
   };
-
-  // Cambiar estado de tarea
   const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
     await handleUpdateTask(taskId, { status: newStatus });
   };
-
-  // Funciones auxiliares
   const resetNewTask = () => {
     setNewTask({
       title: '',
@@ -656,10 +615,8 @@ function App() {
     setEditingTask(null);
     resetNewTask();
   };
-
-  // Función para filtrar tareas basada en el término de búsqueda
   const filteredTasks = Array.isArray(tasks) ? tasks.filter(task => {
-    if (!searchTerm.trim()) return true; // Si no hay término de búsqueda, mostrar todas
+    if (!searchTerm.trim()) return true;
     
     const searchLower = searchTerm.toLowerCase();
     return (
@@ -670,8 +627,6 @@ function App() {
       (task.category && task.category.toLowerCase().includes(searchLower))
     );
   }) : [];
-
-  // Calculamos estadísticas de las tareas filtradas
   const stats = {
     total: Array.isArray(filteredTasks) ? filteredTasks.length : 0,
     pending: Array.isArray(filteredTasks) ? filteredTasks.filter(t => t.status === 'pending').length : 0,
@@ -679,8 +634,6 @@ function App() {
     completed: Array.isArray(filteredTasks) ? filteredTasks.filter(t => t.status === 'completed').length : 0,
     urgent: Array.isArray(filteredTasks) ? filteredTasks.filter(t => t.priority === 'urgent').length : 0,
   };
-
-  // Función para obtener color de prioridad
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgent': return '#ef4444';
@@ -690,8 +643,6 @@ function App() {
       default: return '#64748b';
     }
   };
-
-  // Función para obtener color de estado
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return '#22c55e';
@@ -700,11 +651,9 @@ function App() {
       default: return '#64748b';
     }
   };
-
-  // Función para generar datos dinámicos del gráfico basado en las tareas
   const generateChartData = () => {
     if (!Array.isArray(tasks) || tasks.length === 0) {
-      // Datos de fallback cuando no hay tareas
+
       const fallbackData = [];
       if (activeTab === 'Daily') {
         for (let i = 6; i >= 0; i--) {
@@ -742,7 +691,7 @@ function App() {
 
     try {
       if (activeTab === 'Daily') {
-        // Últimos 7 días
+
         for (let i = 6; i >= 0; i--) {
           const date = new Date(now);
           date.setDate(date.getDate() - i);
@@ -753,7 +702,7 @@ function App() {
           });
         }
       } else if (activeTab === 'Weekly') {
-        // Últimas 8 semanas
+
         for (let i = 7; i >= 0; i--) {
           const date = new Date(now);
           date.setDate(date.getDate() - (i * 7));
@@ -769,7 +718,7 @@ function App() {
           });
         }
       } else {
-        // Monthly - Últimos 6 meses
+
         for (let i = 5; i >= 0; i--) {
           const date = new Date(now);
           date.setMonth(date.getMonth() - i);
@@ -807,28 +756,22 @@ function App() {
 
         return {
           name: period.name || 'N/A',
-          value1: completedInPeriod.length || 0, // Tareas completadas
-          value2: inProgressInPeriod.length || 0, // Tareas en progreso
+          value1: completedInPeriod.length || 0,
+          value2: inProgressInPeriod.length || 0,
         };
       });
     } catch (error) {
       console.error('Error generating chart data:', error);
-      // Retornar datos de fallback en caso de error
+
       return [
         { name: 'N/A', value1: 0, value2: 0 },
       ];
     }
   };
-
-  // Datos dinámicos para los gráficos
   const chartData = generateChartData();
-
-  // Validación de seguridad para los datos del gráfico
   const safeChartData = Array.isArray(chartData) && chartData.length > 0 
     ? chartData.filter(item => item && typeof item.name === 'string' && typeof item.value1 === 'number' && typeof item.value2 === 'number')
     : [{ name: 'Sin datos', value1: 0, value2: 0 }];
-
-  // Debug: log para verificar los datos
   console.log('Chart Data:', chartData);
   console.log('Safe Chart Data:', safeChartData);
   console.log('Tasks:', tasks);

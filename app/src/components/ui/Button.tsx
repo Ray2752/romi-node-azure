@@ -1,15 +1,13 @@
 import React from 'react';
 import { Button as MuiButton, ButtonProps } from '@mui/material';
 import { styled } from '@mui/material/styles';
-
-// Styled Button basado en diseño de Figma
 const StyledButton = styled(MuiButton)(({ theme, variant }) => ({
-  borderRadius: 8, // Cambiar por valor de Figma
+  borderRadius: 8,
   textTransform: 'none',
   fontWeight: 500,
   padding: '12px 24px',
   
-  // Primary variant
+
   ...(variant === 'contained' && {
     backgroundColor: theme.palette.primary.main,
     color: '#ffffff',
@@ -20,7 +18,7 @@ const StyledButton = styled(MuiButton)(({ theme, variant }) => ({
     },
   }),
   
-  // Secondary variant
+
   ...(variant === 'outlined' && {
     borderColor: theme.palette.primary.main,
     color: theme.palette.primary.main,
