@@ -1,16 +1,16 @@
-# 🚀 ROMI Task Manager - Azure Deployment
+# ROMI Task Manager - Azure Deployment
 
-## 📋 Descripción
+## Descripción
 
 Aplicación web **Node.js** desplegada en **Azure** usando **Infrastructure as Code** con **Terraform**.
 
-**🌐 App Desplegada:** https://romi-task-manager.azurewebsites.net
+**App Desplegada:** romi-node-webapp-12345.azurewebsites.net
 
 ---
 
-## 🏗️ **Cumplimiento del Reto**
+## **Cumplimiento del Reto**
 
-### ✅ **Requisitos Implementados:**
+### **Requisitos Implementados:**
 - **Aplicación Web:** Node.js + React desplegada en Azure App Service
 - **Infrastructure as Code:** Terraform para recursos Azure
 - **CI/CD:** GitHub Actions pipeline automático
@@ -19,7 +19,7 @@ Aplicación web **Node.js** desplegada en **Azure** usando **Infrastructure as C
 
 ---
 
-## 📦 **Estructura del Proyecto**
+## **Estructura del Proyecto**
 
 ```
 romi-node-azure/
@@ -36,7 +36,7 @@ romi-node-azure/
 
 ---
 
-## 🏛️ **Arquitectura**
+## **Arquitectura**
 
 ```
 GitHub Actions (CI/CD)
@@ -55,7 +55,7 @@ MongoDB Atlas (Database)
 
 ---
 
-## 🚀 **Pasos de Deployment**
+## **Pasos de Deployment**
 
 ### **1. Clonar repositorio:**
 ```bash
@@ -88,7 +88,7 @@ git push origin main  # Activa el pipeline CI/CD
 
 ---
 
-## 🔐 **Seguridad Implementada**
+## **Seguridad Implementada**
 
 - **Azure Service Principal** para acceso automatizado
 - **GitHub Secrets** para credenciales
@@ -98,11 +98,10 @@ git push origin main  # Activa el pipeline CI/CD
 
 ---
 
-## 📡 **API Endpoints**
+## **API Endpoints**
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| `GET` | `/api/health` | Health check |
 | `GET` | `/api/tasks` | Listar tareas |
 | `POST` | `/api/tasks` | Crear tarea |
 | `PUT` | `/api/tasks/:id` | Actualizar tarea |
@@ -110,7 +109,7 @@ git push origin main  # Activa el pipeline CI/CD
 
 ---
 
-## 🔄 **CI/CD Pipeline**
+## **CI/CD Pipeline**
 
 **GitHub Actions:**
 1. Build React app
@@ -119,10 +118,5 @@ git push origin main  # Activa el pipeline CI/CD
 4. Verify deployment
 
 **Trigger:** Push a branch `main`
-
----
-
-## 📞 **Contacto**
-
 **Desarrollador:** [@Ray2752](https://github.com/Ray2752)  
 **Repositorio:** https://github.com/Ray2752/romi-node-azure
