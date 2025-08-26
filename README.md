@@ -118,5 +118,6 @@ git push origin main  # Activa el pipeline CI/CD
 4. Verify deployment
 
 **Trigger:** Push a branch `main`
+---
 **Desarrollador:** [@Ray2752](https://github.com/Ray2752)  
 **Repositorio:** https://github.com/Ray2752/romi-node-azure
