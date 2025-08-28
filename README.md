@@ -36,22 +36,90 @@ romi-node-azure/
 
 ---
 
-## **Arquitectura**
+## **Arquitectura Detallada**
+
+### **Diagrama de Infraestructura**
 
 ```
-GitHub Actions (CI/CD)
-         ↓
-Azure App Service (Linux + Node.js 18)
-         ↓
-Full Stack App (React + Express)
-         ↓
-MongoDB Atlas (Database)
+┌─────────────────────────────────────────────────────────────────────┐
+│                           AZURE CLOUD                              │
+├─────────────────────────────────────────────────────────────────────┤
+│  ┌─────────────────┐    ┌──────────────────────────────────────────┐ │
+│  │  Resource Group │    │         App Service Plan                 │ │
+│  │  rg-romi-task-  │    │     plan-romi-task-manager               │ │
+│  │    manager      │    │        (Linux B1)                       │ │
+│  └─────────────────┘    └──────────────────────────────────────────┘ │
+│                                        │                             │
+│  ┌─────────────────────────────────────┼─────────────────────────────┐ │
+│  │           Linux Web App             │                             │ │
+│  │      romi-task-manager              │                             │ │
+│  │                                     │                             │ │
+│  │  ┌─────────────┐   ┌──────────────┐ │                             │ │
+│  │  │   React     │   │   Node.js    │ │                             │ │
+│  │  │  Frontend   │   │   Backend    │ │                             │ │
+│  │  │(TypeScript) │   │(Express.js)  │ │                             │ │
+│  │  └─────────────┘   └──────────────┘ │                             │ │
+│  └─────────────────────────────────────┘                             │ │
+└─────────────────────────────────────────────────────────────────────┘
+                               │
+                    ┌──────────┼──────────┐
+                    │                     │
+            ┌───────▼────────┐   ┌────────▼────────┐
+            │   GitHub       │   │   MongoDB       │
+            │   Repository   │   │     Atlas       │
+            │                │   │   (Database)    │
+            │  ┌──────────┐  │   └─────────────────┘
+            │  │ Actions  │  │
+            │  │  CI/CD   │  │
+            │  └──────────┘  │
+            └────────────────┘
 ```
 
-**Recursos Azure:**
-- Resource Group: `rg-romi-task-manager`
-- App Service Plan: `plan-romi-task-manager` (Linux B1)
-- Web App: `romi-task-manager`
+### **Flujo de Deployment**
+
+```
+Developer Code → GitHub Push → GitHub Actions → Build → Deploy → Azure App Service
+                                      ↓
+                               Tests & Validation
+                                      ↓
+                              Automatic Deployment
+```
+
+### **Stack Tecnológico Completo**
+
+| Componente | Tecnología | Función |
+|------------|------------|---------|
+| **Frontend** | React 18 + TypeScript + Material-UI | Interfaz de usuario |
+| **Backend** | Node.js + Express.js | API REST |
+| **Database** | MongoDB Atlas | Persistencia de datos |
+| **Infrastructure** | Terraform | Infrastructure as Code |
+| **CI/CD** | GitHub Actions | Automatización |
+| **Cloud** | Azure App Service | Hosting |
+| **Security** | Service Principal + Secrets | Autenticación |
+
+### **Recursos Azure Desplegados**
+
+```
+Resource Group: rg-romi-task-manager
+├── App Service Plan: plan-romi-task-manager (Linux B1)
+└── Linux Web App: romi-task-manager
+    ├── Runtime: Node.js 18 LTS
+    ├── Environment Variables configuradas
+    ├── Connection Strings seguras
+    └── Health Check endpoints activos
+```
+
+### **Características Técnicas Implementadas**
+
+| Categoría | Implementación | Beneficio |
+|-----------|----------------|-----------|
+| **Frontend** | React 18 + TypeScript + Material-UI | UI moderna y type-safe |
+| **API** | RESTful con Express.js | Estándar de la industria |
+| **Database** | MongoDB Atlas con Mongoose | NoSQL escalable |
+| **Security** | CORS + Helmet + Environment Variables | Protección multi-capa |
+| **Monitoring** | Health Check endpoints | Observabilidad |
+| **CI/CD** | GitHub Actions con auto-deploy | DevOps automatizado |
+| **Infrastructure** | Terraform con Azure Provider | IaC reproducible |
 
 ---
 
